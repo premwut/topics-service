@@ -62,8 +62,6 @@ export class TopicsService {
       throw new NotFoundException('Topic not found')
     }
 
-    const topicIndex = this.topics.findIndex(topic => topic.id === topicId)
-
     const createdComment = new Comment({ username, content, createdAt: new Date() })
     topic.comments.push(createdComment)
 
