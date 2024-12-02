@@ -1,6 +1,6 @@
-import { Body, Controller, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
 import { TopicsService } from 'src/services/topics.service';
-import { CreateTopicRequestDto, GetTopicDetailRequestParams } from './types';
+import { CreateTopicRequestDto, DeleteTopicRequestBody, EditTopicRequestBody, EditTopicRequestDto, GetTopicDetailRequestParams } from './types';
 
 @Controller('topics')
 export class TopicsController {
@@ -24,7 +24,7 @@ export class TopicsController {
 
   @Post('')
   async createTopic(@Body() createTopicDto: CreateTopicRequestDto) {
-    const topic = await this.topicsService.createTopic({ 
+    const topic = await this.topicsService.createTopic({
       username: createTopicDto.username,
       title: createTopicDto.title,
       content: createTopicDto.content
@@ -34,9 +34,15 @@ export class TopicsController {
   }
 
   @Put('/:topicId')
-  async editTopic(@Param() params: GetTopicDetailRequestParams) {
+  async editTopic(@Param() params: GetTopicDetailRequestParams, @Body() body: EditTopicRequestBody) {
     const { topicId } = params || {}
-    const response = await this.topicsService.getTopicDetail(topicId)
+    const editTopicDto = new EditTopicRequestDto({ 
+      topicId,
+      username: body.username,
+      title: body.title,
+      content: body.content
+    })
+    const response = await this.topicsService.editTopic(editTopicDto)
 
     if (!response) {
       throw new NotFoundException('Topic not found')
@@ -45,10 +51,11 @@ export class TopicsController {
     return response
   }
 
-  @Put('/:topicId')
-  async deleteTopic(@Param() params: GetTopicDetailRequestParams) {
+  @Delete('/:topicId')
+  async deleteTopic(@Param() params: GetTopicDetailRequestParams, @Body() body: DeleteTopicRequestBody) {
     const { topicId } = params || {}
-    const response = await this.topicsService.deleteTopic(topicId)
+    const { username } = body
+    const response = await this.topicsService.deleteTopic(username, topicId)
 
     if (!response) {
       throw new NotFoundException('Topic not found')

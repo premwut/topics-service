@@ -1,6 +1,6 @@
-import { Body, Injectable } from '@nestjs/common';
+import { Body, ForbiddenException, Injectable } from '@nestjs/common';
 import _ from 'lodash'
-import { CreateTopicRequestDto } from 'src/controllers/types';
+import { CreateTopicRequestDto, EditTopicRequestDto } from 'src/controllers/types';
 import { Topic } from 'src/entities/topic';
 
 @Injectable()
@@ -15,25 +15,40 @@ export class TopicsService {
   }
 
   async getTopicDetail(topicId: string): Promise<Topic> {
-    const topic = this.topics.find(topic => topic.id === topicId)
+    const topic = this.topics.find((topic, index) => topic.id === topicId)
 
     return topic
   }
 
-  async editTopic(topicId: string): Promise<Topic> {
+  async editTopic(editTopicDto: EditTopicRequestDto): Promise<Topic> {
+    const { topicId, username } = editTopicDto
     const topic = this.topics.find(topic => topic.id === topicId)
+    if (!topic || username !== topic.username) {
+      throw new ForbiddenException('Not authorized deleting this topic.')
+    }
 
-    return topic
+    const updateIndex = this.topics.findIndex(topic => topic.id === topicId)
+    delete editTopicDto.username
+    const updatedTopic = { ...topic, ...editTopicDto }
+    this.topics[updateIndex] = updatedTopic
+
+    return updatedTopic
   }
 
-  async deleteTopic(topicId: string): Promise<Topic> {
+  async deleteTopic(username: string, topicId: string): Promise<Boolean> {
     const topic = this.topics.find(topic => topic.id === topicId)
+    if (!topic || username !== topic.username) {
+      throw new ForbiddenException('Not authorized deleting this topic.')
+    }
+    const filtered = this.topics.filter(topic => topic.id !== topicId)
+    this.topics = [...filtered]
 
-    return topic
+    return true
   }
 
   async createTopic(createTopicDto: CreateTopicRequestDto): Promise<Topic> {
     const topic = new Topic({ username: createTopicDto.username, title: createTopicDto.title, content: createTopicDto.content })
+    this.topics.push(topic)
 
     return topic
   }
