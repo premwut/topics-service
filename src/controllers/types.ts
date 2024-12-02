@@ -55,3 +55,32 @@ export class CreateTopicRequestDto {
   @IsString()
   content: string
 }
+
+export interface CreateCommentParams {
+  topicId: string
+}
+
+export class CreateCommentRequestBody {
+  @IsString()
+  username: string
+
+  @IsString()
+  content: string
+}
+
+export class CreateCommentDto {
+  @IsString()
+  topicId: string
+
+  @IsString()
+  username: string
+
+  @IsString()
+  content: string
+
+  constructor({ topicId, username, content }) {
+    this.topicId = topicId
+    this.username = username
+    this.content = content
+  }
+}

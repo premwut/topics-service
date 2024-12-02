@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
-import { TopicsService } from 'src/services/topics.service';
-import { CreateTopicRequestDto, DeleteTopicRequestBody, EditTopicRequestBody, EditTopicRequestDto, GetTopicDetailRequestParams } from './types';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common'
+import { TopicsService } from 'src/services/topics.service'
+import { CreateCommentDto, CreateCommentParams, CreateCommentRequestBody, CreateTopicRequestDto, DeleteTopicRequestBody, EditTopicRequestBody, EditTopicRequestDto, GetTopicDetailRequestParams } from './types'
 
 @Controller('topics')
 export class TopicsController {
@@ -60,6 +60,15 @@ export class TopicsController {
     if (!response) {
       throw new NotFoundException('Topic not found')
     }
+
+    return response
+  }
+
+  @Post('/:topicId/comments')
+  async createComment(@Param() params: CreateCommentParams, @Body() body: CreateCommentRequestBody) {
+    const { topicId } = params || {}
+    const createCommentDto = new CreateCommentDto({ topicId, username: body.username, content: body.content })
+    const response = await this.topicsService.createComment(createCommentDto)
 
     return response
   }
